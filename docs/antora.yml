@@ -1,0 +1,5 @@
+name: quarkus-seata
+title: Quarkus - Seata
+version: dev
+nav:
+  - modules/ROOT/nav.adoc
