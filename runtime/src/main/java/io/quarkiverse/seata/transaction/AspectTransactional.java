@@ -90,11 +90,12 @@ public class AspectTransactional {
      */
     int lockRetryTimes = -1;
 
-    public AspectTransactional() {}
+    public AspectTransactional() {
+    }
 
     public AspectTransactional(int timeoutMills, String name, Class<? extends Throwable>[] rollbackFor,
-                               String[] rollbackForClassName, Class<? extends Throwable>[] noRollbackFor, String[] noRollbackForClassName,
-                               Propagation propagation, int lockRetryInterval, int lockRetryTimes) {
+            String[] rollbackForClassName, Class<? extends Throwable>[] noRollbackFor, String[] noRollbackForClassName,
+            Propagation propagation, int lockRetryInterval, int lockRetryTimes) {
         this.timeoutMills = timeoutMills;
         this.name = name;
         this.rollbackFor = rollbackFor;

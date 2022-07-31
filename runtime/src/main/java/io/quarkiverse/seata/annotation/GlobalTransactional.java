@@ -15,35 +15,34 @@
  */
 package io.quarkiverse.seata.annotation;
 
-import io.seata.common.DefaultValues;
-import io.seata.tm.api.transaction.Propagation;
-import org.springframework.core.annotation.AliasFor;
-
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Inherited;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import io.seata.common.DefaultValues;
+import io.seata.tm.api.transaction.Propagation;
+
 /**
  * The interface Global transactional.
  *
  * @author slievrly
  * @see io.seata.spring.annotation.GlobalTransactionScanner#wrapIfNecessary(Object, String, Object) io.seata.spring
- * .annotation.GlobalTransactionScanner#wrapIfNecessary(Object, String, Object)// the scanner for TM, GlobalLock, and
- * TCC mode
+ *      .annotation.GlobalTransactionScanner#wrapIfNecessary(Object, String, Object)// the scanner for TM, GlobalLock, and
+ *      TCC mode
  * @see io.seata.spring.annotation.GlobalTransactionalInterceptor#handleGlobalTransaction(MethodInvocation,
- * AspectTransactional) io.seata.spring.annotation.GlobalTransactionalInterceptor#handleGlobalTransaction
- * (MethodInvocation,
- * GlobalTransactional)// TM: the interceptor of TM
+ *      AspectTransactional) io.seata.spring.annotation.GlobalTransactionalInterceptor#handleGlobalTransaction
+ *      (MethodInvocation,
+ *      GlobalTransactional)// TM: the interceptor of TM
  * @see io.seata.spring.annotation.datasource.SeataAutoDataSourceProxyAdvice#invoke(MethodInvocation) io.seata.spring
- * .annotation.datasource.SeataAutoDataSourceProxyAdvice#invoke(MethodInvocation)// RM: the interceptor of
- * GlobalLockLogic and AT/XA mode
+ *      .annotation.datasource.SeataAutoDataSourceProxyAdvice#invoke(MethodInvocation)// RM: the interceptor of
+ *      GlobalLockLogic and AT/XA mode
  * @see io.seata.spring.tcc.TccActionInterceptor#invoke(MethodInvocation) io.seata.spring.tcc
- * .TccActionInterceptor#invoke(MethodInvocation)// RM: the interceptor of TCC mode
+ *      .TccActionInterceptor#invoke(MethodInvocation)// RM: the interceptor of TCC mode
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.METHOD,ElementType.TYPE})
+@Target({ ElementType.METHOD, ElementType.TYPE })
 @Inherited
 public @interface GlobalTransactional {
 
@@ -115,7 +114,7 @@ public @interface GlobalTransactional {
      * @return int
      */
     @Deprecated
-//    @AliasFor("lockRetryInterval")
+    //    @AliasFor("lockRetryInterval")
     int lockRetryInternal() default 0;
 
     /**

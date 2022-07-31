@@ -15,7 +15,32 @@
  */
 package io.quarkiverse.seata.interceptor;
 
+import static io.seata.common.DefaultValues.DEFAULT_DISABLE_GLOBAL_TRANSACTION;
+import static io.seata.common.DefaultValues.DEFAULT_GLOBAL_TRANSACTION_TIMEOUT;
+import static io.seata.common.DefaultValues.DEFAULT_TM_DEGRADE_CHECK;
+import static io.seata.common.DefaultValues.DEFAULT_TM_DEGRADE_CHECK_ALLOW_TIMES;
+import static io.seata.common.DefaultValues.DEFAULT_TM_DEGRADE_CHECK_PERIOD;
+import static io.seata.common.DefaultValues.TM_INTERCEPTOR_ORDER;
+
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Method;
+import java.util.LinkedHashSet;
+import java.util.Optional;
+import java.util.Set;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+
+import javax.enterprise.inject.Instance;
+import javax.enterprise.inject.spi.CDI;
+import javax.interceptor.AroundInvoke;
+import javax.interceptor.Interceptor;
+import javax.interceptor.InvocationContext;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.google.common.eventbus.Subscribe;
+
 import io.quarkiverse.seata.annotation.GlobalLock;
 import io.quarkiverse.seata.annotation.GlobalTransactional;
 import io.quarkiverse.seata.event.DegradeCheckEvent;
@@ -43,28 +68,6 @@ import io.seata.tm.api.TransactionalTemplate;
 import io.seata.tm.api.transaction.NoRollbackRule;
 import io.seata.tm.api.transaction.RollbackRule;
 import io.seata.tm.api.transaction.TransactionInfo;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import javax.enterprise.inject.Instance;
-import javax.enterprise.inject.spi.CDI;
-import javax.interceptor.AroundInvoke;
-import javax.interceptor.Interceptor;
-import javax.interceptor.InvocationContext;
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Method;
-import java.util.LinkedHashSet;
-import java.util.Optional;
-import java.util.Set;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
-
-import static io.seata.common.DefaultValues.DEFAULT_DISABLE_GLOBAL_TRANSACTION;
-import static io.seata.common.DefaultValues.DEFAULT_GLOBAL_TRANSACTION_TIMEOUT;
-import static io.seata.common.DefaultValues.DEFAULT_TM_DEGRADE_CHECK;
-import static io.seata.common.DefaultValues.DEFAULT_TM_DEGRADE_CHECK_ALLOW_TIMES;
-import static io.seata.common.DefaultValues.DEFAULT_TM_DEGRADE_CHECK_PERIOD;
-import static io.seata.common.DefaultValues.TM_INTERCEPTOR_ORDER;
 
 /**
  * The type Global transactional interceptor.
@@ -92,8 +95,8 @@ public class GlobalTransactionalInterceptor implements ConfigurationChangeListen
     private static volatile Integer degradeNum = 0;
     private static volatile Integer reachNum = 0;
     private static final EventBus EVENT_BUS = new GuavaEventBus("degradeCheckEventBus", true);
-    private static ScheduledThreadPoolExecutor executor =
-            new ScheduledThreadPoolExecutor(1, new NamedThreadFactory("degradeCheckWorker", 1, true));
+    private static ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(1,
+            new NamedThreadFactory("degradeCheckWorker", 1, true));
 
     //region DEFAULT_GLOBAL_TRANSACTION_TIMEOUT
 
@@ -136,8 +139,8 @@ public class GlobalTransactionalInterceptor implements ConfigurationChangeListen
         this.disable = ConfigurationFactory.getInstance().getBoolean(ConfigurationKeys.DISABLE_GLOBAL_TRANSACTION,
                 DEFAULT_DISABLE_GLOBAL_TRANSACTION);
         //todo transcation order
-//        this.order =
-//                ConfigurationFactory.getInstance().getInt(ConfigurationKeys.TM_INTERCEPTOR_ORDER, TM_INTERCEPTOR_ORDER);
+        //        this.order =
+        //                ConfigurationFactory.getInstance().getInt(ConfigurationKeys.TM_INTERCEPTOR_ORDER, TM_INTERCEPTOR_ORDER);
         degradeCheck = ConfigurationFactory.getInstance().getBoolean(ConfigurationKeys.CLIENT_DEGRADE_CHECK,
                 DEFAULT_TM_DEGRADE_CHECK);
         if (degradeCheck) {
@@ -160,10 +163,10 @@ public class GlobalTransactionalInterceptor implements ConfigurationChangeListen
         Method specificMethod = ClassUtils.getMostSpecificMethod(context.getMethod(), targetClass);
         if (specificMethod != null && !specificMethod.getDeclaringClass().equals(Object.class)) {
             //todo 测试
-//            final Method method = BridgeMethodResolver.findBridgedMethod(specificMethod);
+            //            final Method method = BridgeMethodResolver.findBridgedMethod(specificMethod);
             final Method method = specificMethod;
-            final GlobalTransactional globalTransactionalAnnotation =
-                    getAnnotation(method, targetClass, GlobalTransactional.class);
+            final GlobalTransactional globalTransactionalAnnotation = getAnnotation(method, targetClass,
+                    GlobalTransactional.class);
             final GlobalLock globalLockAnnotation = getAnnotation(method, targetClass, GlobalLock.class);
             boolean localDisable = disable || (degradeCheck && degradeNum >= degradeCheckAllowTimes);
             if (!localDisable) {
@@ -190,7 +193,6 @@ public class GlobalTransactionalInterceptor implements ConfigurationChangeListen
         return context.proceed();
     }
 
-
     private Object handleGlobalLock(final InvocationContext context, final GlobalLock globalLockAnno) throws Throwable {
         return globalLockTemplate.execute(new GlobalLockExecutor() {
             @Override
@@ -209,7 +211,7 @@ public class GlobalTransactionalInterceptor implements ConfigurationChangeListen
     }
 
     Object handleGlobalTransaction(final InvocationContext context,
-                                   final AspectTransactional aspectTransactional) throws Throwable {
+            final AspectTransactional aspectTransactional) throws Throwable {
         boolean succeed = true;
         try {
             return transactionalTemplate.execute(new TransactionalExecutor() {

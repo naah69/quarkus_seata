@@ -15,11 +15,12 @@
  */
 package io.quarkiverse.seata.datasource;
 
-import io.seata.rm.datasource.SeataDataSourceProxy;
-
-import javax.sql.DataSource;
 import java.util.HashMap;
 import java.util.Map;
+
+import javax.sql.DataSource;
+
+import io.seata.rm.datasource.SeataDataSourceProxy;
 
 /**
  * the type data source proxy holder

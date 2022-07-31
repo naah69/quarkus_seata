@@ -1,13 +1,13 @@
 package io.quarkiverse.seata.utils;
 
-import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
-
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 
 /**
  * ReflectionUtils
@@ -19,15 +19,12 @@ public class ReflectionUtils {
     private static final Cache<Class<?>, Method[]> declaredMethodsCache = CacheBuilder.newBuilder().build();
     private static final Method[] EMPTY_METHOD_ARRAY = new Method[0];
 
-
-
     public static Method findMethod(Class<?> clazz, String name, Class<?>... paramTypes) {
         assertNotNull(clazz, "Class must not be null");
         assertNotNull(name, "Method name must not be null");
         Class<?> searchType = clazz;
         while (searchType != null) {
-            Method[] methods = (searchType.isInterface() ? searchType.getMethods() :
-                    getDeclaredMethods(searchType, false));
+            Method[] methods = (searchType.isInterface() ? searchType.getMethods() : getDeclaredMethods(searchType, false));
             for (Method method : methods) {
                 if (name.equals(method.getName()) && (paramTypes == null || hasSameParams(method, paramTypes))) {
                     return method;
@@ -56,7 +53,7 @@ public class ReflectionUtils {
                 } else {
                     result1 = declaredMethods;
                 }
-                return  (result1.length == 0 ? EMPTY_METHOD_ARRAY : result1);
+                return (result1.length == 0 ? EMPTY_METHOD_ARRAY : result1);
             });
             return (result.length == 0 || !defensive) ? result : result.clone();
         } catch (Throwable e) {
@@ -65,13 +62,10 @@ public class ReflectionUtils {
         }
     }
 
-
-
     private static boolean hasSameParams(Method method, Class<?>[] paramTypes) {
         return (paramTypes.length == method.getParameterCount() &&
                 Arrays.equals(paramTypes, method.getParameterTypes()));
     }
-
 
     private static List<Method> findConcreteMethodsOnInterfaces(Class<?> clazz) {
         List<Method> result = null;

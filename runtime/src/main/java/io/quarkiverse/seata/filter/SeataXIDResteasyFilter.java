@@ -1,9 +1,6 @@
 package io.quarkiverse.seata.filter;
 
-import io.seata.common.util.StringUtils;
-import io.seata.core.context.RootContext;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.io.IOException;
 
 import javax.annotation.Priority;
 import javax.ws.rs.Priorities;
@@ -11,7 +8,12 @@ import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
 import javax.ws.rs.container.ContainerResponseContext;
 import javax.ws.rs.container.ContainerResponseFilter;
-import java.io.IOException;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import io.seata.common.util.StringUtils;
+import io.seata.core.context.RootContext;
 
 /**
  * SeataXIDResteasyFilter
@@ -23,6 +25,13 @@ import java.io.IOException;
 public class SeataXIDResteasyFilter implements ContainerRequestFilter, ContainerResponseFilter {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SeataXIDResteasyFilter.class);
+
+    /**
+     * request filter
+     * 
+     * @param requestContext request context.
+     * @throws IOException
+     */
     @Override
     public void filter(ContainerRequestContext requestContext) throws IOException {
         String xid = RootContext.getXID();
@@ -39,13 +48,20 @@ public class SeataXIDResteasyFilter implements ContainerRequestFilter, Container
         }
     }
 
+    /**
+     * response filter
+     * 
+     * @param requestContext request context.
+     * @param responseContext response context.
+     * @throws IOException
+     */
     @Override
     public void filter(ContainerRequestContext requestContext, ContainerResponseContext responseContext) throws IOException {
+        //        todo test if exception
         if (RootContext.inGlobalTransaction()) {
             cleanXid(getRequestXID(requestContext));
         }
     }
-
 
     public String getRequestXID(ContainerRequestContext requestContext) {
         return requestContext.getHeaderString(RootContext.KEY_XID);

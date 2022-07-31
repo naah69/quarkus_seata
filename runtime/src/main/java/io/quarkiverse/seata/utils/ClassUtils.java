@@ -13,7 +13,6 @@ public class ClassUtils {
 
     private static final char PACKAGE_SEPARATOR = '.';
 
-
     public static Method getMostSpecificMethod(Method method, Class<?> targetClass) {
         if (targetClass != null && targetClass != method.getDeclaringClass() && isOverridable(method, targetClass)) {
             try {
@@ -24,7 +23,8 @@ public class ClassUtils {
                         return method;
                     }
                 } else {
-                    Method specificMethod = ReflectionUtils.findMethod(targetClass, method.getName(), method.getParameterTypes());
+                    Method specificMethod = ReflectionUtils.findMethod(targetClass, method.getName(),
+                            method.getParameterTypes());
                     return (specificMethod != null ? specificMethod : method);
                 }
             } catch (SecurityException ex) {
@@ -34,11 +34,10 @@ public class ClassUtils {
         return method;
     }
 
-
     /**
      * Determine whether the given method is overridable in the given target class.
      *
-     * @param method      the method to check
+     * @param method the method to check
      * @param targetClass the target class to check against
      */
     private static boolean isOverridable(Method method, Class<?> targetClass) {
@@ -57,20 +56,18 @@ public class ClassUtils {
         return getPackageName(clazz.getName());
     }
 
-
     /**
      * Determine the name of the package of the given fully-qualified class name,
      * e.g. "java.lang" for the {@code java.lang.String} class name.
      *
      * @param fqClassName the fully-qualified class name
      * @return the package name, or the empty String if the class
-     * is defined in the default package
+     *         is defined in the default package
      */
     public static String getPackageName(String fqClassName) {
         ReflectionUtils.assertNotNull(fqClassName, "Class name must not be null");
         int lastDotIndex = fqClassName.lastIndexOf(PACKAGE_SEPARATOR);
         return (lastDotIndex != -1 ? fqClassName.substring(0, lastDotIndex) : "");
     }
-
 
 }

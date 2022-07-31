@@ -15,8 +15,6 @@
  */
 package io.quarkiverse.seata.annotation;
 
-import org.springframework.core.annotation.AliasFor;
-
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Inherited;
 import java.lang.annotation.Retention;
@@ -30,18 +28,22 @@ import java.lang.annotation.Target;
  *
  * use this annotation instead of GlobalTransaction in the situation mentioned above will help performance.
  *
- * @see io.seata.spring.annotation.GlobalTransactionScanner#wrapIfNecessary(Object, String, Object) // the scanner for TM, GlobalLock, and TCC mode
- * @see io.seata.spring.annotation.GlobalTransactionalInterceptor#handleGlobalLock(MethodInvocation, GlobalLock)  // the interceptor of GlobalLock
- * @see io.seata.spring.annotation.datasource.SeataAutoDataSourceProxyAdvice#invoke(MethodInvocation) // the interceptor of GlobalLockLogic and AT/XA mode
+ * @see io.seata.spring.annotation.GlobalTransactionScanner#wrapIfNecessary(Object, String, Object) // the scanner for TM,
+ *      GlobalLock, and TCC mode
+ * @see io.seata.spring.annotation.GlobalTransactionalInterceptor#handleGlobalLock(MethodInvocation, GlobalLock) // the
+ *      interceptor of GlobalLock
+ * @see io.seata.spring.annotation.datasource.SeataAutoDataSourceProxyAdvice#invoke(MethodInvocation) // the interceptor of
+ *      GlobalLockLogic and AT/XA mode
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.METHOD,ElementType.TYPE})
+@Target({ ElementType.METHOD, ElementType.TYPE })
 @Inherited
 public @interface GlobalLock {
     /**
      * customized global lock retry interval(unit: ms)
      * you may use this to override global config of "client.rm.lock.retryInterval"
      * note: 0 or negative number will take no effect(which mean fall back to global config)
+     * 
      * @return lock retry interval
      */
     int lockRetryInterval() default 0;
@@ -50,16 +52,17 @@ public @interface GlobalLock {
      * customized global lock retry interval(unit: ms)
      * you may use this to override global config of "client.rm.lock.retryInterval"
      * note: 0 or negative number will take no effect(which mean fall back to global config)
+     * 
      * @return lock retry interval
      */
     @Deprecated
-    @AliasFor("lockRetryInterval")
     int lockRetryInternal() default 0;
 
     /**
      * customized global lock retry times
      * you may use this to override global config of "client.rm.lock.retryTimes"
      * note: negative number will take no effect(which mean fall back to global config)
+     * 
      * @return lock retry times
      */
     int lockRetryTimes() default -1;
