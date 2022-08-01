@@ -11,6 +11,8 @@ import io.quarkus.arc.deployment.AdditionalBeanBuildItem;
 import io.quarkus.arc.deployment.InterceptorBindingRegistrarBuildItem;
 import io.quarkus.arc.deployment.SyntheticBeanBuildItem;
 import io.quarkus.arc.processor.InterceptorBindingRegistrar;
+import io.quarkus.deployment.Capabilities;
+import io.quarkus.deployment.Capability;
 import io.quarkus.deployment.annotations.BuildProducer;
 import io.quarkus.deployment.annotations.BuildStep;
 import io.quarkus.deployment.annotations.ExecutionTime;
@@ -20,7 +22,6 @@ import io.quarkus.deployment.builditem.FeatureBuildItem;
 import io.quarkus.deployment.builditem.nativeimage.ReflectiveClassBuildItem;
 import io.quarkus.resteasy.reactive.spi.CustomContainerRequestFilterBuildItem;
 import io.quarkus.resteasy.reactive.spi.CustomContainerResponseFilterBuildItem;
-import io.quarkus.resteasy.reactive.spi.ExceptionMapperBuildItem;
 import io.seata.rm.datasource.DataSourceProxy;
 import org.jboss.jandex.DotName;
 
@@ -75,21 +76,26 @@ class SeataProcessor {
     }
 
     @BuildStep
-    void registerXidFilter(BuildProducer<CustomContainerRequestFilterBuildItem> requestFilterProducer, BuildProducer<CustomContainerResponseFilterBuildItem> responseFilterProducer) {
+    void registerXidFilter(BuildProducer<CustomContainerRequestFilterBuildItem> requestFilterProducer,
+                           BuildProducer<CustomContainerResponseFilterBuildItem> responseFilterProducer) {
         requestFilterProducer.produce(new CustomContainerRequestFilterBuildItem(SeataXIDResteasyFilter.class.getName()));
         responseFilterProducer.produce(new CustomContainerResponseFilterBuildItem(SeataXIDResteasyFilter.class.getName()));
     }
 
     @BuildStep
-    void registerXidClientRequestFilter(BuildProducer<AdditionalBeanBuildItem> additionalBeans,
+    void registerXidClientRequestFilter(Capabilities capabilities, BuildProducer<AdditionalBeanBuildItem> additionalBeans,
                                         BuildProducer<ReflectiveClassBuildItem> reflectiveClass,
-                                        BuildProducer<AdditionalIndexedClassesBuildItem> additionalIndexedClassesBuildItem){
-        additionalBeans.produce(AdditionalBeanBuildItem.unremovableOf(SeataXIDClientRequestFilter.class));
-        reflectiveClass.produce(new ReflectiveClassBuildItem(true, true, SeataXIDClientRequestFilter.class));
-        additionalIndexedClassesBuildItem
-                .produce(new AdditionalIndexedClassesBuildItem(SeataXIDClientRequestFilter.class.getName()));
-    }
+                                        BuildProducer<AdditionalIndexedClassesBuildItem> additionalIndexedClassesBuildItem) {
 
+        if (capabilities.isPresent(Capability.REST_CLIENT) ||
+                capabilities.isPresent(Capability.RESTEASY_JSON_JACKSON_CLIENT) ||
+                capabilities.isPresent(Capability.RESTEASY_JSON_JSONB_CLIENT)){
+            additionalBeans.produce(AdditionalBeanBuildItem.unremovableOf(SeataXIDClientRequestFilter.class));
+            reflectiveClass.produce(new ReflectiveClassBuildItem(true, true, SeataXIDClientRequestFilter.class));
+            additionalIndexedClassesBuildItem
+                    .produce(new AdditionalIndexedClassesBuildItem(SeataXIDClientRequestFilter.class.getName()));
+        }
+    }
 
     /**
      * GlobalTransactional Interceptor

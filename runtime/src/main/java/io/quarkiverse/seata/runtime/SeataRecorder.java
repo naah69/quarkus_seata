@@ -54,7 +54,7 @@ public class SeataRecorder {
 
         //        core
         PROPERTY_BEAN_MAP.put(CONFIG_PREFIX, SeataConfigGroupConfig.class);
-        PROPERTY_BEAN_MAP.put(CONFIG_FILE_PREFIX, SeataConfigGroupConfig.SeataConfigGroupFileConfig.class);
+        PROPERTY_BEAN_MAP.put(CONFIG_FILE_PREFIX, SeataConfigGroupFileConfig.class);
         PROPERTY_BEAN_MAP.put(REGISTRY_PREFIX, SeataRegistryConfig.class);
         //        todo support other config
         //        PROPERTY_BEAN_MAP.put(CONFIG_NACOS_PREFIX, ConfigNacosProperties.class);

@@ -1,7 +1,6 @@
 package io.quarkiverse.seata.config.core;
 
 import io.quarkiverse.seata.config.StarterConstants;
-import io.quarkus.runtime.annotations.ConfigGroup;
 import io.quarkus.runtime.annotations.ConfigItem;
 import io.quarkus.runtime.annotations.ConfigPhase;
 import io.quarkus.runtime.annotations.ConfigRoot;
@@ -22,12 +21,4 @@ public class SeataConfigGroupConfig {
 
     public SeataConfigGroupFileConfig file;
 
-    @ConfigGroup
-    public class SeataConfigGroupFileConfig {
-        /**
-         * name
-         */
-        @ConfigItem(defaultValue = "file.conf")
-        String name;
-    }
 }
