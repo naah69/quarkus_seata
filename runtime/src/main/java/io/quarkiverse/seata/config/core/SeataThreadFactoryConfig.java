@@ -6,7 +6,9 @@ import io.quarkiverse.seata.config.StarterConstants;
 import io.quarkus.runtime.annotations.ConfigItem;
 import io.quarkus.runtime.annotations.ConfigPhase;
 import io.quarkus.runtime.annotations.ConfigRoot;
+import io.quarkus.runtime.annotations.RegisterForReflection;
 
+@RegisterForReflection
 @ConfigRoot(name = StarterConstants.THREAD_FACTORY_PREFIX_KEBAB_STYLE, phase = ConfigPhase.BUILD_AND_RUN_TIME_FIXED)
 public class SeataThreadFactoryConfig {
     /**

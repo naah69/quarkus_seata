@@ -7,7 +7,9 @@ import io.quarkiverse.seata.config.StarterConstants;
 import io.quarkus.runtime.annotations.ConfigItem;
 import io.quarkus.runtime.annotations.ConfigPhase;
 import io.quarkus.runtime.annotations.ConfigRoot;
+import io.quarkus.runtime.annotations.RegisterForReflection;
 
+@RegisterForReflection
 @ConfigRoot(name = StarterConstants.UNDO_PREFIX, phase = ConfigPhase.BUILD_AND_RUN_TIME_FIXED)
 public class SeataUndoConfig {
     /**

@@ -4,7 +4,6 @@ import static io.quarkiverse.seata.config.StarterConstants.*;
 import static io.seata.common.util.StringFormatUtils.DOT;
 
 import java.lang.reflect.Field;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -27,8 +26,6 @@ public class SeataConfigProvider implements ExtConfigurationProvider {
     private static final Logger LOGGER = LoggerFactory.getLogger(SeataConfigProvider.class);
 
     private static final String INTERCEPT_METHOD_PREFIX = "get";
-
-    private static final Map<String, Object> PROPERTY_BEAN_INSTANCE_MAP = new HashMap<>(64);
 
     private static final Function optionalMap = v -> {
         if (v instanceof Optional) {
@@ -113,7 +110,6 @@ public class SeataConfigProvider implements ExtConfigurationProvider {
             if (Objects.equals(field.getType(), Map.class)) {
                 return getConfig(dataId, null, String.class);
             }
-            field.setAccessible(true);
             Object defaultValue = field.get(object);
             return getConfig(dataId, defaultValue, field.getType());
         }
@@ -183,7 +179,10 @@ public class SeataConfigProvider implements ExtConfigurationProvider {
             value = ConfigProvider.getConfig().getOptionalValue(io.seata.common.util.StringUtils.hump2Line(dataId), type)
                     .map(optionalMap);
         }
-        return value.orElse(defaultValue);
+        if (value.isEmpty() && defaultValue != null) {
+            return ConfigProvider.getConfig().getConverter(type).map(c -> c.convert(defaultValue.toString())).orElse(null);
+        }
+        return value.orElse(null);
     }
 
 }

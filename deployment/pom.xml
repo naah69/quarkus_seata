@@ -26,6 +26,7 @@
         <dependency>
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-rest-client-reactive-deployment</artifactId>
+            <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>io.quarkiverse.seata</groupId>

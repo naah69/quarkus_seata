@@ -21,6 +21,7 @@
     <dependency>
       <groupId>io.quarkus</groupId>
       <artifactId>quarkus-rest-client-reactive</artifactId>
+      <optional>true</optional>
     </dependency>
     <dependency>
       <groupId>io.quarkus</groupId>
@@ -46,6 +47,7 @@
       <artifactId>seata-serializer-all</artifactId>
       <version>${seata.version}</version>
     </dependency>
+
   </dependencies>
   <build>
     <plugins>

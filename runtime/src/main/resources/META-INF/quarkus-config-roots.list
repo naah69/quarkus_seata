@@ -1,0 +1,15 @@
+io.quarkiverse.seata.config.SeataConfig
+io.quarkiverse.seata.config.core.SeataConfigGroupConfig
+io.quarkiverse.seata.config.core.SeataConfigGroupFileConfig
+io.quarkiverse.seata.config.core.SeataLogConfig
+io.quarkiverse.seata.config.core.SeataRegistryConfig
+io.quarkiverse.seata.config.core.SeataShutdownConfig
+io.quarkiverse.seata.config.core.SeataThreadFactoryConfig
+io.quarkiverse.seata.config.core.SeataTransportConfig
+io.quarkiverse.seata.config.client.SeataLoadBalanceConfig
+io.quarkiverse.seata.config.client.SeataLockConfig
+io.quarkiverse.seata.config.client.SeataRmConfig
+io.quarkiverse.seata.config.client.SeataServiceConfig
+io.quarkiverse.seata.config.client.SeataTmConfig
+io.quarkiverse.seata.config.client.SeataUndoCompressConfig
+io.quarkiverse.seata.config.client.SeataUndoConfig

@@ -16,6 +16,7 @@
 package io.quarkiverse.seata.config;
 
 import java.util.HashMap;
+import java.util.Map;
 
 import io.seata.config.ConfigurationKeys;
 
@@ -85,6 +86,7 @@ public interface StarterConstants {
 
     int MAP_CAPACITY = 64;
     HashMap<String, Class<?>> PROPERTY_BEAN_MAP = new HashMap<>(MAP_CAPACITY);
+    Map<String, Object> PROPERTY_BEAN_INSTANCE_MAP = new HashMap<>(64);
     /**
      * The following special keys need to be normalized.
      */
