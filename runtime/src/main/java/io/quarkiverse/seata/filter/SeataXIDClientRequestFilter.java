@@ -1,15 +1,13 @@
 package io.quarkiverse.seata.filter;
 
-import java.util.Objects;
+import io.seata.core.context.RootContext;
+import org.jboss.resteasy.reactive.client.spi.ResteasyReactiveClientRequestContext;
+import org.jboss.resteasy.reactive.client.spi.ResteasyReactiveClientRequestFilter;
 
 import javax.annotation.Priority;
 import javax.ws.rs.Priorities;
 import javax.ws.rs.core.MultivaluedMap;
-
-import org.jboss.resteasy.reactive.client.spi.ResteasyReactiveClientRequestContext;
-import org.jboss.resteasy.reactive.client.spi.ResteasyReactiveClientRequestFilter;
-
-import io.seata.core.context.RootContext;
+import java.util.Objects;
 
 @Priority(Priorities.USER)
 public class SeataXIDClientRequestFilter implements ResteasyReactiveClientRequestFilter {
@@ -22,4 +20,6 @@ public class SeataXIDClientRequestFilter implements ResteasyReactiveClientReques
             headers.add(RootContext.KEY_XID, xid);
         }
     }
+
+
 }
