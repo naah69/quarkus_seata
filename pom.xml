@@ -22,7 +22,7 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <quarkus.version>2.10.0.Final</quarkus.version>
-    <seata.version>1.5.2</seata.version>
+    <seata.version>1.6.1</seata.version>
   </properties>
   <dependencyManagement>
     <dependencies>
