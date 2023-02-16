@@ -1,7 +1,5 @@
 package io.quarkiverse.seata.provider.controller;
 
-import java.math.BigDecimal;
-
 import javax.inject.Inject;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -22,8 +20,8 @@ public class AccountController {
 
     @Path("/debit")
     @GET
-    public Boolean debit(String userId, BigDecimal money) {
-        accountService.debit(userId, money);
+    public Boolean debit(String userId) {
+        accountService.debit(userId, null);
         return true;
     }
 }

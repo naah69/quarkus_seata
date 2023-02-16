@@ -2,20 +2,12 @@ package io.quarkiverse.seata.runtime;
 
 import static io.quarkiverse.seata.config.StarterConstants.*;
 
-import java.util.List;
-import java.util.function.Supplier;
-
-import javax.sql.DataSource;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import io.agroal.api.AgroalDataSource;
 import io.quarkiverse.seata.config.SeataConfig;
 import io.quarkiverse.seata.config.client.*;
 import io.quarkiverse.seata.config.core.*;
-import io.quarkiverse.seata.datasource.DataSourceProxyHolder;
-import io.quarkus.agroal.runtime.DataSources;
 import io.quarkus.runtime.ApplicationConfig;
 import io.quarkus.runtime.annotations.Recorder;
 import io.seata.common.util.StringUtils;
@@ -23,7 +15,6 @@ import io.seata.core.rpc.ShutdownHook;
 import io.seata.core.rpc.netty.RmNettyRemotingClient;
 import io.seata.core.rpc.netty.TmNettyRemotingClient;
 import io.seata.rm.RMClient;
-import io.seata.rm.datasource.DataSourceProxy;
 import io.seata.tm.TMClient;
 
 /**
@@ -35,19 +26,6 @@ import io.seata.tm.TMClient;
 @Recorder
 public class SeataRecorder {
     private static final Logger LOGGER = LoggerFactory.getLogger(SeataRecorder.class);
-
-    public Supplier<DataSource> seataDataSourceProxySupplier(List<String> dataSources) {
-        return () -> {
-            //todo 目前仅支持at模式代理，未支持xa模式
-            AgroalDataSource datasource = DataSources.fromName(dataSources.get(0));
-            DataSourceProxy dataSourceProxy = new DataSourceProxy(datasource);
-            DataSourceProxyHolder.put(datasource, dataSourceProxy);
-            if (LOGGER.isInfoEnabled()) {
-                LOGGER.info("seata proxy datasource by jdk dynamic proxy");
-            }
-            return dataSourceProxy;
-        };
-    }
 
     public void initPropertyMap(SeataConfig config,
             SeataConfigGroupConfig configGroupConfig,

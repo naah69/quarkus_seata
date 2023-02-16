@@ -1,12 +1,6 @@
 package io.quarkiverse.seata.deployment;
 
 import java.util.List;
-import java.util.stream.Collectors;
-
-import javax.inject.Singleton;
-
-import org.eclipse.microprofile.config.ConfigProvider;
-import org.jboss.jandex.DotName;
 
 import io.quarkiverse.seata.annotation.GlobalTransactional;
 import io.quarkiverse.seata.config.SeataConfig;
@@ -26,12 +20,15 @@ import io.quarkiverse.seata.config.core.SeataTransportConfig;
 import io.quarkiverse.seata.filter.SeataXIDClientRequestFilter;
 import io.quarkiverse.seata.filter.SeataXIDResteasyFilter;
 import io.quarkiverse.seata.interceptor.GlobalTransactionalInterceptor;
+import io.quarkiverse.seata.jdbc.SeataAgroalConnectionConfigurer;
 import io.quarkiverse.seata.runtime.SeataRecorder;
-import io.quarkus.agroal.spi.JdbcDataSourceBuildItem;
+import io.quarkus.agroal.spi.JdbcDriverBuildItem;
 import io.quarkus.arc.deployment.AdditionalBeanBuildItem;
 import io.quarkus.arc.deployment.InterceptorBindingRegistrarBuildItem;
-import io.quarkus.arc.deployment.SyntheticBeanBuildItem;
+import io.quarkus.arc.processor.BuiltinScope;
 import io.quarkus.arc.processor.InterceptorBindingRegistrar;
+import io.quarkus.datasource.deployment.spi.DefaultDataSourceDbKindBuildItem;
+import io.quarkus.datasource.deployment.spi.DevServicesDatasourceConfigurationHandlerBuildItem;
 import io.quarkus.deployment.Capabilities;
 import io.quarkus.deployment.Capability;
 import io.quarkus.deployment.annotations.BuildProducer;
@@ -40,20 +37,49 @@ import io.quarkus.deployment.annotations.ExecutionTime;
 import io.quarkus.deployment.annotations.Record;
 import io.quarkus.deployment.builditem.AdditionalIndexedClassesBuildItem;
 import io.quarkus.deployment.builditem.FeatureBuildItem;
+import io.quarkus.deployment.builditem.SslNativeConfigBuildItem;
 import io.quarkus.deployment.builditem.nativeimage.ReflectiveClassBuildItem;
 import io.quarkus.resteasy.reactive.spi.CustomContainerRequestFilterBuildItem;
 import io.quarkus.resteasy.reactive.spi.CustomContainerResponseFilterBuildItem;
 import io.quarkus.runtime.ApplicationConfig;
-import io.seata.rm.datasource.DataSourceProxy;
 
-class SeataProcessor {
+public class SeataProcessor {
 
     private static final String FEATURE = "seata";
-    private static final DotName DATA_SOURCE = DotName.createSimple(javax.sql.DataSource.class.getName());
+    private static final String SEATA_DB_KIND = "seata";
 
     @BuildStep
     FeatureBuildItem feature() {
         return new FeatureBuildItem(FEATURE);
+    }
+
+    @BuildStep
+    void registerDriver(BuildProducer<JdbcDriverBuildItem> jdbcDriver,
+            SslNativeConfigBuildItem sslNativeConfigBuildItem) {
+        jdbcDriver.produce(
+                new JdbcDriverBuildItem(SEATA_DB_KIND, "io.quarkiverse.seata.jdbc.driver.SeataDriver"));
+    }
+
+    @BuildStep
+    void configureAgroalConnection(BuildProducer<AdditionalBeanBuildItem> additionalBeans,
+            Capabilities capabilities) {
+        if (capabilities.isPresent(Capability.AGROAL)) {
+            additionalBeans
+                    .produce(new AdditionalBeanBuildItem.Builder().addBeanClass(SeataAgroalConnectionConfigurer.class)
+                            .setDefaultScope(BuiltinScope.APPLICATION.getName())
+                            .setUnremovable()
+                            .build());
+        }
+    }
+
+    @BuildStep
+    DevServicesDatasourceConfigurationHandlerBuildItem devDbHandler() {
+        return DevServicesDatasourceConfigurationHandlerBuildItem.jdbc(SEATA_DB_KIND);
+    }
+
+    @BuildStep
+    void registerDefaultDbType(BuildProducer<DefaultDataSourceDbKindBuildItem> dbKind) {
+        dbKind.produce(new DefaultDataSourceDbKindBuildItem(SEATA_DB_KIND));
     }
 
     @BuildStep
@@ -94,48 +120,10 @@ class SeataProcessor {
         }
     }
 
-    /**
-     * proxy datasource
-     *
-     * @param recorder
-     * @param dataSourceBuildItems
-     * @param syntheticBeanBuildItemBuildProducer
-     */
-    @BuildStep
-    @Record(ExecutionTime.STATIC_INIT)
-    void generateSeataProxyDataSource(Capabilities capabilities,
-            SeataRecorder recorder,
-            List<JdbcDataSourceBuildItem> dataSourceBuildItems,
-            BuildProducer<SyntheticBeanBuildItem> syntheticBeanBuildItemBuildProducer,
-            SeataConfig config) {
-        if (config.enabled && config.enableAutoDataSourceProxy && capabilities.isPresent(Capability.AGROAL)) {
-            List<String> dataSources = dataSourceBuildItems.stream().filter(ds -> !ds.isDefault()).map(ds -> ds.getName())
-                    .collect(Collectors.toList());
-            SyntheticBeanBuildItem.ExtendedBeanConfigurator configurator = SyntheticBeanBuildItem
-                    .configure(DataSourceProxy.class).name("seata").addType(DATA_SOURCE).scope(Singleton.class)
-                    .priority(Integer.MAX_VALUE)
-                    .setRuntimeInit().unremovable().supplier(recorder.seataDataSourceProxySupplier(dataSources));
-
-            syntheticBeanBuildItemBuildProducer.produce(configurator.done());
-
-        }
-
-    }
-
-    @BuildStep
-    void generateSeataProxyDataSource2(Capabilities capabilities,
-            BuildProducer<JdbcDataSourceBuildItem> jdbcDataSourceBuildItemBuildProducer,
-            SeataConfig config) {
-        if (config.enabled && config.enableAutoDataSourceProxy && capabilities.isPresent(Capability.AGROAL)) {
-            jdbcDataSourceBuildItemBuildProducer
-                    .produce(new JdbcDataSourceBuildItem("seata",
-                            ConfigProvider.getConfig().getValue("quarkus.datasource.db-kind", String.class), true));
-        }
-    }
-
     @BuildStep
     void registerXidFilter(BuildProducer<CustomContainerRequestFilterBuildItem> requestFilterProducer,
-            BuildProducer<CustomContainerResponseFilterBuildItem> responseFilterProducer, SeataConfig config) {
+            BuildProducer<CustomContainerResponseFilterBuildItem> responseFilterProducer,
+            SeataConfig config) {
         if (config.enabled) {
             requestFilterProducer.produce(new CustomContainerRequestFilterBuildItem(SeataXIDResteasyFilter.class.getName()));
             responseFilterProducer.produce(new CustomContainerResponseFilterBuildItem(SeataXIDResteasyFilter.class.getName()));
@@ -143,9 +131,11 @@ class SeataProcessor {
     }
 
     @BuildStep
-    void registerXidClientRequestFilter(Capabilities capabilities, BuildProducer<AdditionalBeanBuildItem> additionalBeans,
+    void registerXidClientRequestFilter(Capabilities capabilities,
+            BuildProducer<AdditionalBeanBuildItem> additionalBeans,
             BuildProducer<ReflectiveClassBuildItem> reflectiveClass,
-            BuildProducer<AdditionalIndexedClassesBuildItem> additionalIndexedClassesBuildItem, SeataConfig config) {
+            BuildProducer<AdditionalIndexedClassesBuildItem> additionalIndexedClassesBuildItem,
+            SeataConfig config) {
 
         if (config.enabled && (capabilities.isPresent(Capability.REST_CLIENT)
                 || capabilities.isPresent(Capability.RESTEASY_JSON_JACKSON_CLIENT)
@@ -165,7 +155,8 @@ class SeataProcessor {
      */
     @BuildStep
     void addGlobalTransactionalInterceptor(BuildProducer<InterceptorBindingRegistrarBuildItem> interceptorRegister,
-            BuildProducer<AdditionalBeanBuildItem> additionalBeans, SeataConfig config, SeataServiceConfig seataServiceConfig) {
+            BuildProducer<AdditionalBeanBuildItem> additionalBeans, SeataConfig config,
+            SeataServiceConfig seataServiceConfig) {
         if (config.enabled && !seataServiceConfig.disableGlobalTransaction) {
             interceptorRegister.produce(new InterceptorBindingRegistrarBuildItem(new InterceptorBindingRegistrar() {
                 @Override
@@ -179,4 +170,5 @@ class SeataProcessor {
         }
 
     }
+
 }
