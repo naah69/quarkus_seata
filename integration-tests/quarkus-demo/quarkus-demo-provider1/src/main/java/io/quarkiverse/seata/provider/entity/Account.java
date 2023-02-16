@@ -2,6 +2,7 @@ package io.quarkiverse.seata.provider.entity;
 
 import java.math.BigDecimal;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Table;
 
@@ -15,6 +16,10 @@ import io.quarkus.hibernate.orm.panache.PanacheEntity;
 @DynamicUpdate
 @DynamicInsert
 public class Account extends PanacheEntity {
+
+    @Column(nullable = false)
     public String userId;
+
+    @Column(nullable = false)
     public BigDecimal money;
 }

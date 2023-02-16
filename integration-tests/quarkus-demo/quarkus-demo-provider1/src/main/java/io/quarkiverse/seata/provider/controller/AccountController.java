@@ -6,6 +6,8 @@ import javax.ws.rs.Path;
 
 import io.quarkiverse.seata.provider.service.AccountService;
 
+import java.math.BigDecimal;
+
 /**
  * AccountController
  *
@@ -21,7 +23,7 @@ public class AccountController {
     @Path("/debit")
     @GET
     public Boolean debit(String userId) {
-        accountService.debit(userId, null);
+        accountService.debit(userId, new BigDecimal(100));
         return true;
     }
 }

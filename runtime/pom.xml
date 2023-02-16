@@ -48,6 +48,13 @@
       <version>${seata.version}</version>
     </dependency>
 
+    <dependency>
+      <groupId>io.seata</groupId>
+      <artifactId>seata-sqlparser-druid</artifactId>
+      <version>${seata.version}</version>
+    </dependency>
+
+
   </dependencies>
   <build>
     <plugins>
