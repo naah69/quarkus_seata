@@ -17,7 +17,6 @@ import io.quarkiverse.seata.config.core.SeataRegistryConfig;
 import io.quarkiverse.seata.config.core.SeataShutdownConfig;
 import io.quarkiverse.seata.config.core.SeataThreadFactoryConfig;
 import io.quarkiverse.seata.config.core.SeataTransportConfig;
-import io.quarkiverse.seata.filter.SeataXIDClientRequestFilter;
 import io.quarkiverse.seata.filter.SeataXIDResteasyFilter;
 import io.quarkiverse.seata.interceptor.GlobalTransactionalInterceptor;
 import io.quarkiverse.seata.jdbc.SeataAgroalConnectionConfigurer;
@@ -121,10 +120,11 @@ public class SeataProcessor {
     }
 
     @BuildStep
-    void registerXidFilter(BuildProducer<CustomContainerRequestFilterBuildItem> requestFilterProducer,
+    void registerXidFilter(Capabilities capabilities,
+            BuildProducer<CustomContainerRequestFilterBuildItem> requestFilterProducer,
             BuildProducer<CustomContainerResponseFilterBuildItem> responseFilterProducer,
             SeataConfig config) {
-        if (config.enabled) {
+        if (config.enabled && capabilities.isCapabilityWithPrefixPresent(Capability.RESTEASY)) {
             requestFilterProducer.produce(new CustomContainerRequestFilterBuildItem(SeataXIDResteasyFilter.class.getName()));
             responseFilterProducer.produce(new CustomContainerResponseFilterBuildItem(SeataXIDResteasyFilter.class.getName()));
         }
@@ -137,13 +137,11 @@ public class SeataProcessor {
             BuildProducer<AdditionalIndexedClassesBuildItem> additionalIndexedClassesBuildItem,
             SeataConfig config) {
 
-        if (config.enabled && (capabilities.isPresent(Capability.REST_CLIENT)
-                || capabilities.isPresent(Capability.RESTEASY_JSON_JACKSON_CLIENT)
-                || capabilities.isPresent(Capability.RESTEASY_JSON_JSONB_CLIENT))) {
-            additionalBeans.produce(AdditionalBeanBuildItem.unremovableOf(SeataXIDClientRequestFilter.class));
-            reflectiveClass.produce(new ReflectiveClassBuildItem(true, true, SeataXIDClientRequestFilter.class));
-            additionalIndexedClassesBuildItem
-                    .produce(new AdditionalIndexedClassesBuildItem(SeataXIDClientRequestFilter.class.getName()));
+        if (config.enabled && capabilities.isCapabilityWithPrefixPresent(Capability.REST_CLIENT)) {
+            String filterClass = "io.quarkiverse.seata.filter.SeataXIDClientRequestFilter";
+            additionalBeans.produce(AdditionalBeanBuildItem.unremovableOf(filterClass));
+            reflectiveClass.produce(new ReflectiveClassBuildItem(true, true, filterClass));
+            additionalIndexedClassesBuildItem.produce(new AdditionalIndexedClassesBuildItem(filterClass));
         }
     }
 

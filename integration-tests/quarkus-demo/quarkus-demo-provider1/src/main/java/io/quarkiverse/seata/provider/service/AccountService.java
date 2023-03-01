@@ -5,9 +5,8 @@ import java.math.BigDecimal;
 import javax.enterprise.context.ApplicationScoped;
 import javax.transaction.Transactional;
 
+import io.quarkiverse.seata.annotation.GlobalTransactional;
 import io.quarkiverse.seata.provider.entity.Account;
-import io.quarkiverse.seata.provider.entity.UndoLog;
-import io.quarkus.hibernate.orm.panache.PanacheEntityBase;
 
 @ApplicationScoped
 public class AccountService {

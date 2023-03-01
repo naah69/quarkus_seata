@@ -14,7 +14,8 @@ import org.eclipse.microprofile.rest.client.inject.RegisterRestClient;
  * @author nayan
  * @date 2022/8/2 16:52
  */
-@RegisterRestClient(baseUri = "127.0.0.1:8082")
+@Path("/")
+@RegisterRestClient(baseUri = "http://127.0.0.1:8082")
 public interface AccountClient {
 
     @GET

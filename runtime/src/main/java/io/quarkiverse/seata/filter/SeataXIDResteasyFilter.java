@@ -5,15 +5,16 @@ import java.io.IOException;
 import javax.annotation.Priority;
 import javax.ws.rs.Priorities;
 import javax.ws.rs.container.ContainerRequestContext;
-import javax.ws.rs.container.ContainerRequestFilter;
-import javax.ws.rs.container.ContainerResponseContext;
-import javax.ws.rs.container.ContainerResponseFilter;
+import javax.ws.rs.core.Context;
 
+import org.jboss.resteasy.reactive.server.ServerRequestFilter;
+import org.jboss.resteasy.reactive.server.ServerResponseFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import io.seata.common.util.StringUtils;
 import io.seata.core.context.RootContext;
+import io.vertx.core.http.HttpServerRequest;
 
 /**
  * SeataXIDResteasyFilter
@@ -22,9 +23,12 @@ import io.seata.core.context.RootContext;
  * @date 2022/7/30 1:47 PM
  */
 @Priority(Priorities.USER)
-public class SeataXIDResteasyFilter implements ContainerRequestFilter, ContainerResponseFilter {
+public class SeataXIDResteasyFilter {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SeataXIDResteasyFilter.class);
+
+    @Context
+    HttpServerRequest request;
 
     /**
      * request filter
@@ -32,8 +36,8 @@ public class SeataXIDResteasyFilter implements ContainerRequestFilter, Container
      * @param requestContext request context.
      * @throws IOException
      */
-    @Override
-    public void filter(ContainerRequestContext requestContext) throws IOException {
+    @ServerRequestFilter(priority = Priorities.HEADER_DECORATOR)
+    public void filterRequest(ContainerRequestContext requestContext) throws IOException {
         String xid = RootContext.getXID();
         String rpcXid = getRequestXID(requestContext);
 
@@ -52,11 +56,10 @@ public class SeataXIDResteasyFilter implements ContainerRequestFilter, Container
      * response filter
      * 
      * @param requestContext request context.
-     * @param responseContext response context.
      * @throws IOException
      */
-    @Override
-    public void filter(ContainerRequestContext requestContext, ContainerResponseContext responseContext) throws IOException {
+    @ServerResponseFilter
+    public void filterResponse(ContainerRequestContext requestContext) throws IOException {
         //        todo test if exception
         if (RootContext.inGlobalTransaction()) {
             cleanXid(getRequestXID(requestContext));

@@ -3,7 +3,8 @@ package io.quarkiverse.seata.consumer.service;
 import java.math.BigDecimal;
 
 import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
+
+import org.eclipse.microprofile.rest.client.inject.RestClient;
 
 import io.quarkiverse.seata.annotation.GlobalTransactional;
 import io.quarkiverse.seata.consumer.client.AccountClient;
@@ -12,9 +13,9 @@ import io.quarkiverse.seata.consumer.client.StockClient;
 @ApplicationScoped
 public class BusinessService {
 
-    @Inject
+    @RestClient
     StockClient stockClient;
-    @Inject
+    @RestClient
     AccountClient accountClient;
 
     /**
@@ -24,7 +25,7 @@ public class BusinessService {
      * @param commodityCode
      * @param orderCount
      */
-    @GlobalTransactional
+    @GlobalTransactional(rollbackFor = Exception.class)
     public void purchase(String userId, String commodityCode, int orderCount) {
         stockClient.deduct(commodityCode, orderCount);
 

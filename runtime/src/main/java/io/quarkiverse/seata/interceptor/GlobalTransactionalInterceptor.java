@@ -45,7 +45,6 @@ import io.quarkiverse.seata.annotation.GlobalLock;
 import io.quarkiverse.seata.annotation.GlobalTransactional;
 import io.quarkiverse.seata.event.DegradeCheckEvent;
 import io.quarkiverse.seata.transaction.AspectTransactional;
-import io.quarkiverse.seata.utils.ClassUtils;
 import io.quarkus.arc.Priority;
 import io.seata.common.exception.ShouldNeverHappenException;
 import io.seata.common.thread.NamedThreadFactory;
@@ -102,27 +101,6 @@ public class GlobalTransactionalInterceptor implements ConfigurationChangeListen
 
     private static int defaultGlobalTransactionTimeout = 0;
 
-    private void initDefaultGlobalTransactionTimeout() {
-        if (GlobalTransactionalInterceptor.defaultGlobalTransactionTimeout <= 0) {
-            int defaultGlobalTransactionTimeout;
-            try {
-                defaultGlobalTransactionTimeout = ConfigurationFactory.getInstance().getInt(
-                        ConfigurationKeys.DEFAULT_GLOBAL_TRANSACTION_TIMEOUT, DEFAULT_GLOBAL_TRANSACTION_TIMEOUT);
-            } catch (Exception e) {
-                LOGGER.error("Illegal global transaction timeout value: " + e.getMessage());
-                defaultGlobalTransactionTimeout = DEFAULT_GLOBAL_TRANSACTION_TIMEOUT;
-            }
-            if (defaultGlobalTransactionTimeout <= 0) {
-                LOGGER.warn("Global transaction timeout value '{}' is illegal, and has been reset to the default value '{}'",
-                        defaultGlobalTransactionTimeout, DEFAULT_GLOBAL_TRANSACTION_TIMEOUT);
-                defaultGlobalTransactionTimeout = DEFAULT_GLOBAL_TRANSACTION_TIMEOUT;
-            }
-            GlobalTransactionalInterceptor.defaultGlobalTransactionTimeout = defaultGlobalTransactionTimeout;
-        }
-    }
-
-    //endregion
-
     /**
      * Instantiates a new Global transactional interceptor.
      *
@@ -157,10 +135,31 @@ public class GlobalTransactionalInterceptor implements ConfigurationChangeListen
         this.initDefaultGlobalTransactionTimeout();
     }
 
+    private void initDefaultGlobalTransactionTimeout() {
+        if (GlobalTransactionalInterceptor.defaultGlobalTransactionTimeout <= 0) {
+            int defaultGlobalTransactionTimeout;
+            try {
+                defaultGlobalTransactionTimeout = ConfigurationFactory.getInstance().getInt(
+                        ConfigurationKeys.DEFAULT_GLOBAL_TRANSACTION_TIMEOUT, DEFAULT_GLOBAL_TRANSACTION_TIMEOUT);
+            } catch (Exception e) {
+                LOGGER.error("Illegal global transaction timeout value: " + e.getMessage());
+                defaultGlobalTransactionTimeout = DEFAULT_GLOBAL_TRANSACTION_TIMEOUT;
+            }
+            if (defaultGlobalTransactionTimeout <= 0) {
+                LOGGER.warn("Global transaction timeout value '{}' is illegal, and has been reset to the default value '{}'",
+                        defaultGlobalTransactionTimeout, DEFAULT_GLOBAL_TRANSACTION_TIMEOUT);
+                defaultGlobalTransactionTimeout = DEFAULT_GLOBAL_TRANSACTION_TIMEOUT;
+            }
+            GlobalTransactionalInterceptor.defaultGlobalTransactionTimeout = defaultGlobalTransactionTimeout;
+        }
+    }
+
+    //endregion
+
     @AroundInvoke
     public Object intercept(InvocationContext context) throws Throwable {
         Class<?> targetClass = context.getTarget().getClass();
-        Method specificMethod = ClassUtils.getMostSpecificMethod(context.getMethod(), targetClass);
+        Method specificMethod = context.getMethod();
         if (specificMethod != null && !specificMethod.getDeclaringClass().equals(Object.class)) {
             //todo 测试
             //            final Method method = BridgeMethodResolver.findBridgedMethod(specificMethod);

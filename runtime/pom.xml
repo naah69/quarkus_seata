@@ -19,6 +19,10 @@
       <artifactId>quarkus-resteasy-reactive</artifactId>
     </dependency>
     <dependency>
+      <groupId>org.postgresql</groupId>
+      <artifactId>postgresql</artifactId>
+    </dependency>
+    <dependency>
       <groupId>io.quarkus</groupId>
       <artifactId>quarkus-rest-client-reactive</artifactId>
       <optional>true</optional>
@@ -47,14 +51,31 @@
       <artifactId>seata-serializer-all</artifactId>
       <version>${seata.version}</version>
     </dependency>
-
     <dependency>
       <groupId>io.seata</groupId>
       <artifactId>seata-sqlparser-druid</artifactId>
       <version>${seata.version}</version>
     </dependency>
-
-
+    <dependency>
+      <groupId>cglib</groupId>
+      <artifactId>cglib</artifactId>
+      <version>3.2.5</version>
+    </dependency>
+    <dependency>
+      <groupId>com.alibaba</groupId>
+      <artifactId>fastjson</artifactId>
+      <version>1.2.83</version>
+    </dependency>
+    <dependency>
+      <groupId>io.protostuff</groupId>
+      <artifactId>protostuff-core</artifactId>
+      <version>1.5.9</version>
+    </dependency>
+    <dependency>
+      <groupId>io.protostuff</groupId>
+      <artifactId>protostuff-runtime</artifactId>
+      <version>1.5.9</version>
+    </dependency>
   </dependencies>
   <build>
     <plugins>

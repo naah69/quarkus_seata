@@ -21,8 +21,13 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import javax.enterprise.util.Nonbinding;
+import javax.interceptor.InterceptorBinding;
+
+import io.quarkiverse.seata.transaction.AspectTransactional;
 import io.seata.common.DefaultValues;
 import io.seata.tm.api.transaction.Propagation;
+import net.bytebuddy.implementation.bytecode.member.MethodInvocation;
 
 /**
  * The interface Global transactional.
@@ -41,6 +46,7 @@ import io.seata.tm.api.transaction.Propagation;
  * @see io.seata.spring.tcc.TccActionInterceptor#invoke(MethodInvocation) io.seata.spring.tcc
  *      .TccActionInterceptor#invoke(MethodInvocation)// RM: the interceptor of TCC mode
  */
+@InterceptorBinding
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ ElementType.METHOD, ElementType.TYPE })
 @Inherited
@@ -53,6 +59,7 @@ public @interface GlobalTransactional {
      *
      * @return timeoutMills in MILLISECONDS.
      */
+    @Nonbinding
     int timeoutMills() default DefaultValues.DEFAULT_GLOBAL_TRANSACTION_TIMEOUT;
 
     /**
@@ -60,6 +67,7 @@ public @interface GlobalTransactional {
      *
      * @return Given name.
      */
+    @Nonbinding
     String name() default "";
 
     /**
@@ -67,6 +75,7 @@ public @interface GlobalTransactional {
      *
      * @return the class array of the rollback for
      */
+    @Nonbinding
     Class<? extends Throwable>[] rollbackFor() default {};
 
     /**
@@ -74,6 +83,7 @@ public @interface GlobalTransactional {
      *
      * @return the class name of rollback for
      */
+    @Nonbinding
     String[] rollbackForClassName() default {};
 
     /**
@@ -81,6 +91,7 @@ public @interface GlobalTransactional {
      *
      * @return the class array of no rollback for
      */
+    @Nonbinding
     Class<? extends Throwable>[] noRollbackFor() default {};
 
     /**
@@ -88,6 +99,7 @@ public @interface GlobalTransactional {
      *
      * @return string [ ]
      */
+    @Nonbinding
     String[] noRollbackForClassName() default {};
 
     /**
@@ -95,6 +107,7 @@ public @interface GlobalTransactional {
      *
      * @return propagation
      */
+    @Nonbinding
     Propagation propagation() default Propagation.REQUIRED;
 
     /**
@@ -104,6 +117,7 @@ public @interface GlobalTransactional {
      *
      * @return int
      */
+    @Nonbinding
     int lockRetryInterval() default 0;
 
     /**
@@ -115,6 +129,7 @@ public @interface GlobalTransactional {
      */
     @Deprecated
     //    @AliasFor("lockRetryInterval")
+    @Nonbinding
     int lockRetryInternal() default 0;
 
     /**
@@ -124,5 +139,6 @@ public @interface GlobalTransactional {
      *
      * @return int
      */
+    @Nonbinding
     int lockRetryTimes() default -1;
 }

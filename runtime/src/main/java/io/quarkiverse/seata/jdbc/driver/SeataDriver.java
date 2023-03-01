@@ -1,5 +1,6 @@
 package io.quarkiverse.seata.jdbc.driver;
 
+import java.net.URI;
 import java.sql.Connection;
 import java.sql.Driver;
 import java.sql.DriverManager;
@@ -14,11 +15,18 @@ import java.util.logging.Logger;
 import javax.enterprise.inject.literal.NamedLiteral;
 import javax.sql.DataSource;
 
+import org.postgresql.ds.PGSimpleDataSource;
 import org.slf4j.LoggerFactory;
 
 import io.agroal.api.AgroalDataSource;
 import io.quarkiverse.seata.datasource.DataSourceProxyHolder;
+import io.quarkus.agroal.runtime.DataSourceJdbcBuildTimeConfig;
+import io.quarkus.agroal.runtime.DataSourceJdbcRuntimeConfig;
+import io.quarkus.agroal.runtime.DataSourcesJdbcBuildTimeConfig;
+import io.quarkus.agroal.runtime.DataSourcesJdbcRuntimeConfig;
 import io.quarkus.arc.Arc;
+import io.quarkus.datasource.runtime.DataSourceRuntimeConfig;
+import io.quarkus.datasource.runtime.DataSourcesRuntimeConfig;
 import io.seata.rm.datasource.DataSourceProxy;
 
 /**
@@ -59,8 +67,25 @@ public class SeataDriver implements Driver {
         AgroalDataSource agroalDataSource = Arc.container()
                 .instance(AgroalDataSource.class, NamedLiteral.of(dataSourceName))
                 .get();
-        DataSourceProxy dataSourceProxy = new DataSourceProxy(agroalDataSource);
-        DataSourceProxyHolder.put(agroalDataSource, dataSourceProxy);
+        DataSourceJdbcBuildTimeConfig jdbcBuildTimeConfig = Arc.container()
+                .instance(DataSourcesJdbcBuildTimeConfig.class)
+                .get().namedDataSources.get(dataSourceName).jdbc;
+        DataSourceJdbcRuntimeConfig jdbcConfig = Arc.container()
+                .instance(DataSourcesJdbcRuntimeConfig.class)
+                .get().namedDataSources.get(dataSourceName).jdbc;
+        DataSourceRuntimeConfig dataSourceRuntimeConfig = Arc.container()
+                .instance(DataSourcesRuntimeConfig.class)
+                .get().namedDataSources.get(dataSourceName);
+        // todo 抽象逻辑，封装其他数据源
+        PGSimpleDataSource dataSource = new PGSimpleDataSource();
+        String realUrl = jdbcConfig.url.get();
+        URI jdbcUri = URI.create(realUrl.substring(realUrl.indexOf(":") + 1));
+        dataSource.setServerName(jdbcUri.getAuthority());
+        dataSource.setDatabaseName(jdbcUri.getPath().substring(1));
+        dataSource.setUser(dataSourceRuntimeConfig.username.get());
+        dataSource.setPassword(dataSourceRuntimeConfig.password.get());
+        DataSourceProxy dataSourceProxy = new DataSourceProxy(dataSource);
+        DataSourceProxyHolder.put(dataSource, dataSourceProxy);
         if (LOGGER.isInfoEnabled()) {
             LOGGER.info("seata proxy datasource by jdk dynamic proxy");
         }
