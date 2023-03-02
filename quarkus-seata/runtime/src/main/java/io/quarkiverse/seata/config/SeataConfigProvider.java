@@ -1,6 +1,12 @@
 package io.quarkiverse.seata.config;
 
-import static io.quarkiverse.seata.config.StarterConstants.*;
+import static io.quarkiverse.seata.config.StarterConstants.PROPERTY_BEAN_INSTANCE_MAP;
+import static io.quarkiverse.seata.config.StarterConstants.PROPERTY_BEAN_MAP;
+import static io.quarkiverse.seata.config.StarterConstants.SEATA_PREFIX;
+import static io.quarkiverse.seata.config.StarterConstants.SERVICE_PREFIX;
+import static io.quarkiverse.seata.config.StarterConstants.SPECIAL_KEY_GROUPLIST;
+import static io.quarkiverse.seata.config.StarterConstants.SPECIAL_KEY_SERVICE;
+import static io.quarkiverse.seata.config.StarterConstants.SPECIAL_KEY_VGROUP_MAPPING;
 import static io.seata.common.util.StringFormatUtils.DOT;
 
 import java.lang.reflect.Field;
@@ -18,8 +24,10 @@ import org.slf4j.LoggerFactory;
 import io.seata.common.exception.ShouldNeverHappenException;
 import io.seata.config.Configuration;
 import io.seata.config.ExtConfigurationProvider;
-import net.sf.cglib.proxy.Enhancer;
-import net.sf.cglib.proxy.MethodInterceptor;
+import net.bytebuddy.ByteBuddy;
+import net.bytebuddy.dynamic.DynamicType;
+import net.bytebuddy.implementation.InvocationHandlerAdapter;
+import net.bytebuddy.matcher.ElementMatchers;
 
 public class SeataConfigProvider implements ExtConfigurationProvider {
 
@@ -36,8 +44,10 @@ public class SeataConfigProvider implements ExtConfigurationProvider {
 
     @Override
     public Configuration provide(Configuration originalConfiguration) {
-        return (Configuration) Enhancer.create(originalConfiguration.getClass(),
-                (MethodInterceptor) (proxy, method, args, methodProxy) -> {
+        DynamicType.Builder.MethodDefinition.ReceiverTypeDefinition<Configuration> intercept = new ByteBuddy()
+                .subclass(Configuration.class)
+                .method(ElementMatchers.any())
+                .intercept(InvocationHandlerAdapter.of((proxy, method, args) -> {
                     if (method.getName().startsWith(INTERCEPT_METHOD_PREFIX) && args.length > 0) {
                         Object result;
                         String rawDataId = (String) args[0];
@@ -57,9 +67,14 @@ public class SeataConfigProvider implements ExtConfigurationProvider {
                             return result;
                         }
                     }
-
                     return method.invoke(originalConfiguration, args);
-                });
+                }));
+        try {
+            return intercept.make().load(Configuration.class.getClassLoader())
+                    .getLoaded().newInstance();
+        } catch (InstantiationException | IllegalAccessException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private Object get(String dataId, Object defaultValue) throws IllegalAccessException, InstantiationException {
@@ -99,7 +114,9 @@ public class SeataConfigProvider implements ExtConfigurationProvider {
      * @param object
      * @param fieldName
      * @param dataId
+     *
      * @return java.lang.Object
+     *
      * @author xingfudeshi@gmail.com
      */
     private Object getFieldValue(Object object, String fieldName, String dataId) throws IllegalAccessException {
@@ -120,6 +137,7 @@ public class SeataConfigProvider implements ExtConfigurationProvider {
      * convert data id
      *
      * @param rawDataId
+     *
      * @return dataId
      */
     private String convertDataId(String rawDataId) {
@@ -136,6 +154,7 @@ public class SeataConfigProvider implements ExtConfigurationProvider {
      * Get property prefix
      *
      * @param dataId
+     *
      * @return propertyPrefix
      */
     private String getPropertyPrefix(String dataId) {
@@ -152,6 +171,7 @@ public class SeataConfigProvider implements ExtConfigurationProvider {
      * Get property suffix
      *
      * @param dataId
+     *
      * @return propertySuffix
      */
     private String getPropertySuffix(String dataId) {
@@ -170,17 +190,22 @@ public class SeataConfigProvider implements ExtConfigurationProvider {
      * @param dataId data id
      * @param defaultValue default value
      * @param type type
+     *
      * @return object
      */
     private Object getConfig(String dataId, Object defaultValue, Class<?> type) {
 
         Optional value = ConfigProvider.getConfig().getOptionalValue(dataId, type).map(optionalMap);
         if (value.isEmpty()) {
-            value = ConfigProvider.getConfig().getOptionalValue(io.seata.common.util.StringUtils.hump2Line(dataId), type)
+            value = ConfigProvider.getConfig()
+                    .getOptionalValue(io.seata.common.util.StringUtils.hump2Line(dataId), type)
                     .map(optionalMap);
         }
         if (value.isEmpty() && defaultValue != null) {
-            return ConfigProvider.getConfig().getConverter(type).map(c -> c.convert(defaultValue.toString())).orElse(null);
+            return ConfigProvider.getConfig()
+                    .getConverter(type)
+                    .map(c -> c.convert(defaultValue.toString()))
+                    .orElse(null);
         }
         return value.orElse(null);
     }
