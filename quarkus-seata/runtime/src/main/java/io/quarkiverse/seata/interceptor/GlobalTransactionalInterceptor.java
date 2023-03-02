@@ -161,8 +161,6 @@ public class GlobalTransactionalInterceptor implements ConfigurationChangeListen
         Class<?> targetClass = context.getTarget().getClass();
         Method specificMethod = context.getMethod();
         if (specificMethod != null && !specificMethod.getDeclaringClass().equals(Object.class)) {
-            //todo 测试
-            //            final Method method = BridgeMethodResolver.findBridgedMethod(specificMethod);
             final Method method = specificMethod;
             final GlobalTransactional globalTransactionalAnnotation = getAnnotation(method, targetClass,
                     GlobalTransactional.class);

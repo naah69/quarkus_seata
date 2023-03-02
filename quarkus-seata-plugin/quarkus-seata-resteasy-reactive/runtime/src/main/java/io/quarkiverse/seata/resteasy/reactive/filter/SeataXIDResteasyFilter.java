@@ -60,7 +60,6 @@ public class SeataXIDResteasyFilter {
      */
     @ServerResponseFilter
     public void filterResponse(ContainerRequestContext requestContext) throws IOException {
-        //        todo test if exception
         if (RootContext.inGlobalTransaction()) {
             cleanXid(getRequestXID(requestContext));
         }
