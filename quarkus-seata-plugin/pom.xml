@@ -12,7 +12,6 @@
     <modules>
         <module>quarkus-seata-resteasy-reactive</module>
         <module>quarkus-seata-rest-client-reactive</module>
-        <module>quarkus-seata-dapr-rest-client</module>
     </modules>
 
 </project>

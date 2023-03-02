@@ -23,7 +23,6 @@
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <quarkus.version>2.13.4.Final</quarkus.version>
     <seata.version>1.6.1</seata.version>
-    <dap-restclient.version>1.0.0-SNAPSHOT</dap-restclient.version>
   </properties>
   <dependencyManagement>
     <dependencies>
