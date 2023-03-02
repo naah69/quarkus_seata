@@ -2,16 +2,22 @@
 <project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <modelVersion>4.0.0</modelVersion>
-  <modules>
-    <module>quarkus-demo</module>
-  </modules>
+
   <parent>
     <groupId>io.quarkiverse.seata</groupId>
-    <artifactId>quarkus-seata-parent</artifactId>
+    <artifactId>quarkus-seata-all-parent</artifactId>
     <version>1.0.0-SNAPSHOT</version>
   </parent>
   <artifactId>quarkus-seata-integration-tests</artifactId>
   <name>Quarkus - Seata - Integration Tests</name>
   <packaging>pom</packaging>
+
+  <properties>
+    <maven.deploy.skip>true</maven.deploy.skip>
+  </properties>
+
+  <modules>
+    <module>quarkus-demo</module>
+  </modules>
 
 </project>

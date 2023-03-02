@@ -1,0 +1,5 @@
+name: quarkus-seata-rest-client-reactive
+title: Quarkus Seata Rest Client Reactive
+version: dev
+nav:
+  - modules/ROOT/nav.adoc

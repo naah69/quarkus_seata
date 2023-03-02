@@ -1,0 +1,5 @@
+name: quarkus-seata-dapr-rest-client
+title: Quarkus Seata Dapr Rest Client
+version: dev
+nav:
+  - modules/ROOT/nav.adoc

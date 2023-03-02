@@ -39,6 +39,11 @@
             <artifactId>quarkus-seata</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>io.quarkiverse.seata</groupId>
+            <artifactId>quarkus-seata-rest-client-reactive</artifactId>
+            <version>${project.parent.version}</version>
+        </dependency>
     </dependencies>
 
 </project>
